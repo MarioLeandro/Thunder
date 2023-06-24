@@ -1,20 +1,23 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import '@expo/match-media';
+import { useFonts, Quicksand_700Bold, Quicksand_400Regular } from '@expo-google-fonts/quicksand';
+import TutorialScreen from './src/pages/TutorialScreen';
+import { NativeBaseProvider, Box } from 'native-base';
+import LoginScreen from './src/pages/LoginScreen';
 
 export default function App() {
+  let [fontsLoaded] = useFonts({
+    Quicksand_700Bold,
+    Quicksand_400Regular,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>VELLEM, RECEBA!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NativeBaseProvider>
+      <TutorialScreen />
+      {/* <LoginScreen /> */}
+    </NativeBaseProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
