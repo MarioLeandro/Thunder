@@ -17,7 +17,7 @@ import { Image, Platform, StyleSheet, View, useWindowDimensions } from 'react-na
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const LoginScreen = (props) => {
+const LoginScreen = ({ navigation }) => {
   const { height, width } = useWindowDimensions();
   const [showPass, setShowPass] = React.useState(false);
 
@@ -99,7 +99,8 @@ const LoginScreen = (props) => {
                 borderColor={'violet.800'}
                 borderWidth={'2'}
                 _text={{ color: 'coolGray.100' }}
-                colorScheme={'white'}>
+                colorScheme={'white'}
+                onPress={() => navigation.navigate('Tutorial')}>
                 Entrar
               </Button>
               <HStack mt="6" justifyContent="center">
