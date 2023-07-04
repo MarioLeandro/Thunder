@@ -4,7 +4,7 @@ import { useMediaQuery } from 'react-responsive';
 
 const img = require('../../assets/tutorial-screen/imgOne.png');
 
-const Card = ({ title, description, image, number }) => {
+const Card = ({ title, description, image, number, item }) => {
   const { height, width } = useWindowDimensions();
 
   const isTabletOrMobileDevice = useMediaQuery({
@@ -63,7 +63,7 @@ const Card = ({ title, description, image, number }) => {
       <Image
         source={img}
         style={{
-          width: Math.round(width * 0.2),
+          width: Math.round(width * 0.15),
           height: Math.round(height * 0.23),
           resizeMode: 'contain',
         }}
@@ -84,8 +84,8 @@ const Card = ({ title, description, image, number }) => {
       <View
         style={{
           ...styles.cardNumber,
-          width: Math.round(width * 0.04),
-          height: Math.round(height * 0.07),
+          width: Math.round(width * 0.03),
+          height: Math.round(height * 0.043),
         }}>
         <Text
           style={{

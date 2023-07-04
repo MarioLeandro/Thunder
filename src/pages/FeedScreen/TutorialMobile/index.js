@@ -15,7 +15,8 @@ const TutorialMobile = (props) => {
         padding: 48,
       }}>
       <Text style={{ fontSize: Math.round(width * 0.06), ...styles.textTitle }}>Seu treino</Text>
-      <Text style={{ fontSize: Math.round(width * 0.04), marginBottom: 0, ...styles.subTextTitle }}>
+      <Text
+        style={{ fontSize: Math.round(width * 0.04), marginBottom: 64, ...styles.subTextTitle }}>
         Siga os passos a seguir e aumente seu nível dentro e fora da plataforma
       </Text>
       <AppIntroSlider
@@ -28,9 +29,9 @@ const TutorialMobile = (props) => {
         renderPrevButton={() => (
           <Ionicons name="arrow-back-circle-outline" size={52} color="#434343" />
         )}
-        renderItem={({ item }) => (
+        renderItem={() => (
           <View style={{ height: Math.round(height * 0.55) }}>
-            <Card item={item} />
+            <Card />
           </View>
         )}
         data={[1, 2, 3, 4]}

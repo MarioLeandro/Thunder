@@ -12,26 +12,30 @@ import {
   Text,
   VStack,
 } from 'native-base';
-import React, { useContext } from 'react';
+import React from 'react';
 import { Image, Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useToast } from 'native-base';
 import api from '../../services/api';
-import AuthContext from '../../contexts/auth';
 
-const LoginScreen = ({ navigation }) => {
+const RegisterScreen = ({ navigation }) => {
   const { height, width } = useWindowDimensions();
-  const { login } = useContext(AuthContext);
-
   const [showPass, setShowPass] = React.useState(false);
-  const [email, setEmail] = React.useState('');
+  const [showCPass, setShowCPass] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
 
-  async function handleSignIn() {
+  async function handleSignUp() {
     try {
-      await login(email, password);
-      console.log('logado');
+      await api.post('/user/', {
+        name,
+        email,
+        password,
+      });
+      console.log('foi');
+      navigation.navigate('Login');
     } catch (error) {
       console.log(error);
     }
@@ -58,7 +62,7 @@ const LoginScreen = ({ navigation }) => {
               color="coolGray.100"
               textAlign={'center'}
               fontFamily={'Quicksand_700Bold'}>
-              Bem vindo
+              Criar conta
             </Heading>
             <Heading
               mt="1"
@@ -67,7 +71,7 @@ const LoginScreen = ({ navigation }) => {
               size="xs"
               textAlign={'center'}
               fontFamily={'Quicksand_400Regular'}>
-              Faça login para continuar!
+              Registre-se para continuar!
             </Heading>
 
             <VStack space={3} mt="5">
@@ -76,10 +80,22 @@ const LoginScreen = ({ navigation }) => {
                 <Input
                   size={'lg'}
                   bgColor={'coolGray.100'}
+                  value={name}
+                  onChangeText={(text) => setName(text)}
+                  InputLeftElement={
+                    <Icon as={<Ionicons name="person" />} size={5} ml="2" color="black" />
+                  }
+                />
+              </FormControl>
+              <FormControl>
+                <FormControl.Label _text={{ color: 'coolGray.100' }}>E-mail</FormControl.Label>
+                <Input
+                  size={'lg'}
+                  bgColor={'coolGray.100'}
                   value={email}
                   onChangeText={(text) => setEmail(text)}
                   InputLeftElement={
-                    <Icon as={<Ionicons name="person" />} size={5} ml="2" color="black" />
+                    <Icon as={<Ionicons name="mail" />} size={5} ml="2" color="black" />
                   }
                 />
               </FormControl>
@@ -102,30 +118,61 @@ const LoginScreen = ({ navigation }) => {
                     </Pressable>
                   }
                 />
+                {/* <Link
+                  _text={{
+                    fontSize: 'xs',
+                    fontWeight: '500',
+                    color: 'indigo.500',
+                  }}
+                  alignSelf="flex-end"
+                  mt="1">
+                  Esqueceu a Senha?
+                </Link> */}
+              </FormControl>
+              <FormControl>
+                <FormControl.Label _text={{ color: 'coolGray.100' }}>
+                  Confirmar Senha
+                </FormControl.Label>
+                <Input
+                  type={showCPass ? 'text' : 'password'}
+                  size={'lg'}
+                  bgColor={'coolGray.100'}
+                  value={confirmPassword}
+                  onChangeText={(text) => setConfirmPassword(text)}
+                  InputRightElement={
+                    <Pressable onPress={() => setShowCPass(!showCPass)}>
+                      <Icon
+                        as={<Ionicons name={showCPass ? 'eye' : 'eye-off'} />}
+                        size={5}
+                        mr="2"
+                        color="black"
+                      />
+                    </Pressable>
+                  }
+                />
               </FormControl>
               <Button
+                onPress={() => handleSignUp()}
                 mt="2"
                 variant={'outline'}
                 borderColor={'violet.800'}
                 borderWidth={'2'}
                 _text={{ color: 'coolGray.100' }}
-                colorScheme={'white'}
-                onPress={() => handleSignIn()}>
-                Entrar
+                colorScheme={'white'}>
+                Registrar-se
               </Button>
               <HStack mt="6" justifyContent="center">
                 <Text fontSize="sm" color="coolGray.100">
-                  Sou novo aqui.{' '}
+                  Já possuo conta.{' '}
                 </Text>
                 <Link
-                  onPress={() => navigation.navigate('Register')}
-                  style={{ cursor: 'pointer' }}
                   _text={{
                     color: 'white',
                     fontWeight: 'bold',
                     fontSize: 'sm',
-                  }}>
-                  Registrar-se
+                  }}
+                  href="#">
+                  Entrar
                 </Link>
               </HStack>
             </VStack>
@@ -144,4 +191,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default RegisterScreen;

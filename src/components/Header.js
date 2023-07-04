@@ -12,19 +12,13 @@ const Header = ({ navigation, route, options }) => {
       alignItems={'center'}
       justifyContent={'space-between'}
       px="4">
-      {navigation ? (
-        <TouchableOpacity onPress={navigation.openDrawer}>
-          <Image
-            source={'https://avatars.githubusercontent.com/u/63363561?v=4'}
-            style={{ height: 50, width: 50, borderRadius: 40, marginBottom: 10 }}
-          />
-        </TouchableOpacity>
-      ) : (
+      <TouchableOpacity onPress={navigation.openDrawer}>
         <Image
-          source={'https://avatars.githubusercontent.com/u/63363561?v=4'}
+          source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
           style={{ height: 50, width: 50, borderRadius: 40, marginBottom: 10 }}
         />
-      )}
+      </TouchableOpacity>
+
       <Box w="50%" maxW="400">
         <Progress value={45} colorScheme="light" />
       </Box>

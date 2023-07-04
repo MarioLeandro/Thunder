@@ -1,16 +1,26 @@
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Flex, HStack } from 'native-base';
+import AuthContext from '../contexts/auth';
+import { useNavigation } from '@react-navigation/native';
 
 const CustomDrawer = (props) => {
+  const { signed, logout } = useContext(AuthContext);
+  const navigation = useNavigation();
+
+  const handleSignOut = async () => {
+    await logout();
+    navigation.navigate('Login');
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <DrawerContentScrollView contentContainerStyle={{ backgroundColor: '#AA58F4' }}>
         <View style={{ padding: 20 }}>
           <Image
-            source={'https://avatars.githubusercontent.com/u/63363561?v=4'}
+            source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
             style={{ height: 80, width: 80, borderRadius: 40, marginBottom: 10 }}
           />
           <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'Quicksand_700Bold' }}>
@@ -26,7 +36,7 @@ const CustomDrawer = (props) => {
         </Flex>
       </DrawerContentScrollView>
       <View style={{ padding: 20, borderTopWidth: 1, borderTopColor: '#ccc' }}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => handleSignOut()}>
           <Flex direction="row" alignItems={'center'}>
             <Ionicons name="log-out-outline" size={22} />
             <Text style={{ fontSize: 15, fontFamily: 'Quicksand_700Bold', marginLeft: 5 }}>
@@ -38,13 +48,5 @@ const CustomDrawer = (props) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default CustomDrawer;
