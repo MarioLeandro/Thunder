@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://10.34.134.6:3001',
+  baseURL: 'http://192.168.1.105:3001',
   validateStatus: (status) => 200 <= status < 300,
 });
 

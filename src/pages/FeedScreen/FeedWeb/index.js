@@ -1,32 +1,114 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, useWindowDimensions, Touchable, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Flex, Text, Image, TextArea, Button, Divider, FlatList, Fab, Modal } from 'native-base';
 import * as ImagePicker from 'expo-image-picker';
 import { useMediaQuery } from 'react-responsive';
+import api from '../../../services/api';
+import { useDropzone } from 'react-dropzone';
 
 const FeedWeb = (props) => {
   const [image, setImage] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [postText, setPostText] = useState('');
 
   const { height, width } = useWindowDimensions();
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+    const { assets, canceled } = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
+      base64: false,
+      aspect: [4, 4],
       quality: 1,
     });
 
-    console.log(result);
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
+    if (!canceled) {
+      setImage({ uri: assets[0].uri, name: assets[0].fileName, type: assets[0].type });
     }
   };
 
+  const onDrop = (acceptedFiles) => {
+    const file = acceptedFiles[0];
+    const fileUrl = URL.createObjectURL(file);
+    setImage({ uri: fileUrl, file });
+    console.log(file);
+  };
+
+  let dpZone = null;
+
+  if (Platform.OS === 'web') {
+    dpZone = useDropzone({
+      accept: {
+        'image/jpeg': ['.jpeg', '.png'],
+      },
+      maxFiles: 1,
+      onDrop,
+    });
+  }
+
+  const handleSavePost = async () => {
+    //setIsSaving(true);
+
+    // if (!postText) {
+    //   toast({
+    //     title: `Preencha todos os campos`,
+    //     position: 'top-right',
+    //     status: 'error',
+    //     isClosable: true,
+    //   });
+
+    //   return;
+    // }
+
+    console.log(postText, image);
+    const post = new FormData();
+    post.append('text', postText);
+    post.append('image', Platform.OS === 'web' ? image.file : image);
+
+    console.log(image);
+
+    try {
+      const { data } = await api.post('/post/', post, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // if (!data) {
+      //   toast({
+      //     title: `Erro ao cadastrar prato`,
+      //     position: 'top-right',
+      //     status: 'error',
+      //     isClosable: true,
+      //   });
+      //   return;
+      // }
+
+      // toast({
+      //   title: `Prato cadastrado com sucesso!`,
+      //   position: 'top-right',
+      //   status: 'success',
+      //   isClosable: true,
+      // });
+
+      // setTimeout(() => {
+      //   navigate('/cal/dish');
+      // }, 1000);
+      // handle successful response
+    } catch (error) {
+      console.error(error, 'edasdjsakdjask');
+      // toast({
+      //   title: `Erro ao cadastrar prato`,
+      //   position: 'top-right',
+      //   status: 'error',
+      //   isClosable: true,
+      // });
+    } finally {
+      //setIsSaving(false)
+    }
+  };
   const isTabletOrMobileDevice = useMediaQuery({
     maxDeviceWidth: 1224,
   });
@@ -86,59 +168,58 @@ const FeedWeb = (props) => {
           <Flex
             w="full"
             h={'auto'}
-            maxH={500}
+            //maxH={500}
             direction="column"
-            alignItems={'center'}
             borderRadius={'lg'}
             shadow={'5'}
             justifyContent={'space-between'}
             gap={4}
             px="10"
             py="4">
-            <Flex
-              direction="row"
-              justifyContent={'space-between'}
-              alignItems={'flex-start'}
-              w="100%">
-              {!isTabletOrMobileDevice && (
-                <View>
-                  <Image
-                    source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
-                    style={{ height: 50, width: 50, borderRadius: 40 }}
-                  />
-                </View>
-              )}
-
+            <Flex>
+              <View
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  alignSelf: 'flex-start',
+                  gap: 10,
+                }}>
+                <Image
+                  alt="post"
+                  source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
+                  style={{ height: 50, width: 50, borderRadius: 40 }}
+                />
+                <Text fontFamily={'Quicksand_700Bold'} fontSize={20}>
+                  Mario Leandro
+                </Text>
+              </View>
+            </Flex>
+            <Divider />
+            <Flex gap={4}>
               <TextArea
                 w={isTabletOrMobileDevice ? '100%' : '90%'}
                 h={140}
                 borderRadius={'lg'}
                 variant="unstyled"
-                placeholder="O que você está pensando?"
                 size="xl"
+                value="Oi tudo bem ?"
+                isReadOnly
                 p="4"
-                backgroundColor="gray.100"
               />
+              {image && (
+                <Image
+                  alt="post"
+                  source={{ uri: image?.uri }}
+                  style={{ width: '100%', height: isTabletOrMobileDevice ? 200 : 500 }}
+                  resizeMode={'contain'}
+                />
+              )}
             </Flex>
-            <Divider />
-            <Flex direction="row-reverse" justifyContent={'space-between'} w="100%">
-              <Button colorScheme={'violet'} minW={100}>
-                <Text color={'white'}>Postar</Text>
-              </Button>
+            <Flex direction="row" justifyContent={'flex-end'} w="100%">
               <Flex direction="row" alignItems={'center'}>
-                {isTabletOrMobileDevice && (
-                  <>
-                    <View>
-                      <Image
-                        source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
-                        style={{ height: 50, width: 50, borderRadius: 40 }}
-                      />
-                    </View>
-                    <Divider orientation="vertical" mx="3" />
-                  </>
-                )}
                 <TouchableOpacity>
-                  <Ionicons name="image-outline" size={22} />
+                  <MaterialCommunityIcons name="comment-outline" size={22} />
                 </TouchableOpacity>
               </Flex>
             </Flex>
@@ -160,6 +241,7 @@ const FeedWeb = (props) => {
           <Modal.Header>
             <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Image
+                alt="post"
                 source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
                 style={{ height: 50, width: 50, borderRadius: 40 }}
               />
@@ -173,6 +255,9 @@ const FeedWeb = (props) => {
               <TextArea
                 w={'100%'}
                 h={140}
+                value={postText}
+                onChange={(e) => setPostText(e.currentTarget.value)}
+                onChangeText={(text) => setPostText(text)}
                 borderRadius={'lg'}
                 variant="unstyled"
                 placeholder="O que você está pensando?"
@@ -180,24 +265,53 @@ const FeedWeb = (props) => {
                 p="4"
                 backgroundColor="gray.100"
               />
-              {image && (
-                <Image
-                  source={{ uri: image }}
-                  style={{ width: '100%', height: isTabletOrMobileDevice ? 200 : 550 }}
-                  resizeMode={'contain'}
+              {image && Platform.OS !== 'web' && (
+                <Flex position={'relative'}>
+                  <TouchableOpacity
+                    onPress={() => setImage(null)}
+                    style={{ zIndex: 999, position: 'absolute', right: 7, top: 25 }}>
+                    <Ionicons name="close-circle" size={22} color="gray" />
+                  </TouchableOpacity>
+                  <Image
+                    alt="post"
+                    source={{ uri: image?.uri }}
+                    style={{ width: '100%', height: isTabletOrMobileDevice ? 200 : 500 }}
+                    resizeMode={'stretch'}
+                  />
+                </Flex>
+              )}
+              {Platform.OS === 'web' && image && (
+                <img
+                  src={image?.uri}
+                  alt="Uploaded"
+                  style={{
+                    width: '100%',
+                    height: isTabletOrMobileDevice ? 200 : 500,
+                    objectFit: 'fill',
+                  }}
                 />
               )}
             </Flex>
           </Modal.Body>
           <Modal.Footer>
             <Flex direction="row-reverse" justifyContent={'space-between'} w="100%">
-              <Button colorScheme={'violet'} minW={100}>
+              <Button colorScheme={'violet'} minW={100} onPress={() => handleSavePost()}>
                 <Text color={'white'}>Postar</Text>
               </Button>
               <Flex direction="row" alignItems={'center'}>
-                <TouchableOpacity onPress={pickImage}>
-                  <Ionicons name="image-outline" size={22} />
-                </TouchableOpacity>
+                {Platform.OS === 'web' && (
+                  <div {...dpZone.getRootProps()}>
+                    <input id="inputImage" {...dpZone.getInputProps()} />
+                    <label htmlFor="inputImage" style={{ cursor: 'pointer' }}>
+                      <Ionicons name="image-outline" size={22} />
+                    </label>
+                  </div>
+                )}
+                {Platform.OS !== 'web' && (
+                  <TouchableOpacity onPress={pickImage}>
+                    <Ionicons name="image-outline" size={22} />
+                  </TouchableOpacity>
+                )}
               </Flex>
             </Flex>
           </Modal.Footer>
