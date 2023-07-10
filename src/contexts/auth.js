@@ -1,7 +1,12 @@
 import React, { createContext, useState, useEffect } from 'react';
 import api from '../services/api';
 import CustomToast from '../components/CustomToast';
-import { isAuthenticated, logout as unauthenticate, authenticate } from '../services/auth';
+import {
+  isAuthenticated,
+  logout as unauthenticate,
+  authenticate,
+  recoverUser,
+} from '../services/auth';
 
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from 'native-base';
@@ -23,20 +28,41 @@ export const AuthProvider = ({ children }) => {
         },
         (error) => {
           if (error?.response?.status === 401) {
-            console.log('deslogado');
+            toast.show({
+              placement: 'bottom',
+              render: () => {
+                return (
+                  <CustomToast
+                    description={'Sua sessão expirou'}
+                    title={'Erro'}
+                    variant={'solid'}
+                    duration={1000}
+                    status={'danger'}
+                  />
+                );
+              },
+            });
             logout();
             setUser(null);
-            navigation.navigate('Login');
           }
           return error;
         }
       );
 
-      let { user } = await isAuthenticated();
+      let { token } = await isAuthenticated();
 
-      user && setUser(JSON.parse(user));
-
-      setLoading(false);
+      if (token) {
+        recoverUser()
+          .then((response) => {
+            if (!response) {
+              signOut();
+            }
+            setUser(response);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      }
     }
 
     loadStoragedData();
@@ -65,7 +91,6 @@ export const AuthProvider = ({ children }) => {
               variant={'solid'}
               duration={1000}
               status={'danger'}
-              placement={'top'}
             />
           );
         },

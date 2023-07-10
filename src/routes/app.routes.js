@@ -24,6 +24,7 @@ const AppRoutes = () => {
     return (
       <>
         <Drawer.Navigator
+          initialRouteName="Home"
           drawerContent={(props) => <CustomDrawer {...props} />}
           screenOptions={{
             header: Header,
@@ -66,7 +67,7 @@ const AppRoutes = () => {
   }
 
   return (
-    <AppStack.Navigator initialRouteName="Training" screenOptions={{ headerShown: false }}>
+    <AppStack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
       <AppStack.Screen name="Home" component={FeedScreen} />
       <AppStack.Screen name="Training" component={TutorialScreen} />
       <AppStack.Screen name="Food" component={TutorialScreen} />

@@ -1,21 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Flex, Text, Image, TextArea, Button, Divider, FlatList, Fab, Modal } from 'native-base';
+import {
+  Flex,
+  Text,
+  Image,
+  TextArea,
+  Button,
+  Divider,
+  FlatList,
+  Fab,
+  Modal,
+  useToast,
+  Box,
+  Actionsheet,
+  useDisclose,
+  ScrollView,
+} from 'native-base';
 import * as ImagePicker from 'expo-image-picker';
 import { useMediaQuery } from 'react-responsive';
 import api from '../../../services/api';
 import { useDropzone } from 'react-dropzone';
+import CustomToast from '../../../components/CustomToast';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const FeedWeb = (props) => {
+  const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclose();
+
   const [image, setImage] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [postText, setPostText] = useState('');
+  const [postText, setPostText] = useState(null);
+  const [commentText, setCommentText] = useState(null);
+  const [posts, setPosts] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(null);
 
   const { height, width } = useWindowDimensions();
 
+  async function getData() {
+    try {
+      const { data } = await api.get('/post/');
+      setPosts(data);
+      setSelectedPost(selectedPost ? data.find((post) => post._id === selectedPost._id) : null);
+      //setLoading(false);
+    } catch (error) {
+      console.log(error);
+      toast.show({
+        placement: 'bottom',
+        render: () => {
+          return (
+            <CustomToast
+              description={'Erro ao listar posts'}
+              title={'Erro'}
+              variant={'solid'}
+              duration={1000}
+              status={'error'}
+            />
+          );
+        },
+      });
+    }
+  }
+
+  useEffect(() => {
+    getData();
+  }, []);
+
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
     const { assets, canceled } = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -29,43 +81,53 @@ const FeedWeb = (props) => {
     }
   };
 
-  const onDrop = (acceptedFiles) => {
+  const onDrop = useCallback((acceptedFiles) => {
+    console.log('dpzone');
     const file = acceptedFiles[0];
     const fileUrl = URL.createObjectURL(file);
     setImage({ uri: fileUrl, file });
     console.log(file);
-  };
+  }, []);
 
   let dpZone = null;
 
-  if (Platform.OS === 'web') {
+  if (Platform.OS === 'web' && !dpZone) {
     dpZone = useDropzone({
       accept: {
         'image/jpeg': ['.jpeg', '.png'],
       },
       maxFiles: 1,
       onDrop,
+      noDrag: true,
     });
   }
 
   const handleSavePost = async () => {
     //setIsSaving(true);
 
-    // if (!postText) {
-    //   toast({
-    //     title: `Preencha todos os campos`,
-    //     position: 'top-right',
-    //     status: 'error',
-    //     isClosable: true,
-    //   });
+    if (!postText) {
+      toast.show({
+        placement: 'bottom',
+        render: () => {
+          return (
+            <CustomToast
+              description={'Escreva algo para postar'}
+              title={'Erro'}
+              variant={'solid'}
+              duration={1000}
+              status={'error'}
+            />
+          );
+        },
+      });
 
-    //   return;
-    // }
+      return;
+    }
 
     console.log(postText, image);
     const post = new FormData();
     post.append('text', postText);
-    post.append('image', Platform.OS === 'web' ? image.file : image);
+    post.append('image', Platform.OS === 'web' ? image?.file : image);
 
     console.log(image);
 
@@ -76,92 +138,105 @@ const FeedWeb = (props) => {
         },
       });
 
-      // if (!data) {
-      //   toast({
-      //     title: `Erro ao cadastrar prato`,
-      //     position: 'top-right',
-      //     status: 'error',
-      //     isClosable: true,
-      //   });
-      //   return;
-      // }
+      if (!data) {
+        toast.show({
+          placement: 'bottom',
+          render: () => {
+            return (
+              <CustomToast
+                description={'Erro ao postar'}
+                title={'Erro'}
+                variant={'solid'}
+                duration={1000}
+                status={'error'}
+              />
+            );
+          },
+        });
+        return;
+      }
 
-      // toast({
-      //   title: `Prato cadastrado com sucesso!`,
-      //   position: 'top-right',
-      //   status: 'success',
-      //   isClosable: true,
-      // });
-
-      // setTimeout(() => {
-      //   navigate('/cal/dish');
-      // }, 1000);
-      // handle successful response
+      toast.show({
+        placement: 'bottom',
+        render: () => {
+          return (
+            <CustomToast
+              description={'Concluído'}
+              title={'Sucesso'}
+              variant={'solid'}
+              duration={1000}
+              status={'success'}
+            />
+          );
+        },
+      });
+      getData();
+      setShowModal(false);
+      setPostText('');
+      setImage(null);
     } catch (error) {
-      console.error(error, 'edasdjsakdjask');
-      // toast({
-      //   title: `Erro ao cadastrar prato`,
-      //   position: 'top-right',
-      //   status: 'error',
-      //   isClosable: true,
-      // });
+      console.error(error);
+      toast.show({
+        placement: 'bottom',
+        render: () => {
+          return (
+            <CustomToast
+              description={'Erro ao postar'}
+              title={'Erro'}
+              variant={'solid'}
+              duration={1000}
+              status={'error'}
+            />
+          );
+        },
+      });
     } finally {
       //setIsSaving(false)
     }
   };
+
+  const handleSaveComment = async () => {
+    //setIsSaving(true);
+
+    try {
+      const { data } = await api.post('/post/' + selectedPost._id, {
+        text: commentText,
+      });
+
+      getData();
+      setCommentText('');
+    } catch (error) {
+      console.error(error);
+      toast.show({
+        placement: 'bottom',
+        render: () => {
+          return (
+            <CustomToast
+              description={'Erro ao postar'}
+              title={'Erro'}
+              variant={'solid'}
+              duration={1000}
+              status={'error'}
+            />
+          );
+        },
+      });
+    } finally {
+      //setIsSaving(false)
+    }
+  };
+
   const isTabletOrMobileDevice = useMediaQuery({
     maxDeviceWidth: 1224,
   });
-
-  const data = [
-    {
-      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-      fullName: 'Aafreen Khan',
-      timeStamp: '12:47 PM',
-      recentText: 'Good Day!',
-      avatarUrl:
-        'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    },
-    {
-      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-      fullName: 'Sujitha Mathur',
-      timeStamp: '11:11 PM',
-      recentText: 'Cheer up, there!',
-      avatarUrl:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTyEaZqT3fHeNrPGcnjLLX1v_W4mvBlgpwxnA&usqp=CAU',
-    },
-    {
-      id: '58694a0f-3da1-471f-bd96-145571e29d72',
-      fullName: 'Anci Barroco',
-      timeStamp: '6:22 PM',
-      recentText: 'Good Day!',
-      avatarUrl: 'https://miro.medium.com/max/1400/0*0fClPmIScV5pTLoE.jpg',
-    },
-    {
-      id: '68694a0f-3da1-431f-bd56-142371e29d72',
-      fullName: 'Aniket Kumar',
-      timeStamp: '8:56 PM',
-      recentText: 'All the best',
-      avatarUrl:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr01zI37DYuR8bMV5exWQBSw28C1v_71CAh8d7GP1mplcmTgQA6Q66Oo--QedAN1B4E1k&usqp=CAU',
-    },
-    {
-      id: '28694a0f-3da1-471f-bd96-142456e29d72',
-      fullName: 'Kiara',
-      timeStamp: '12:47 PM',
-      recentText: 'I will call today.',
-      avatarUrl:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBwgu1A5zgPSvfE83nurkuzNEoXs9DMNr8Ww&usqp=CAU',
-    },
-  ];
 
   return (
     <View style={{ ...styles.container }}>
       <FlatList
         py={10}
-        px={width * 0.1}
+        px={width * 0.05}
         showsVerticalScrollIndicator={false}
-        data={data}
+        data={posts}
         ItemSeparatorComponent={() => <View style={{ height: 40 }} />}
         onEndReached={() => console.log('carregando...')}
         renderItem={({ item }) => (
@@ -170,8 +245,18 @@ const FeedWeb = (props) => {
             h={'auto'}
             //maxH={500}
             direction="column"
-            borderRadius={'lg'}
-            shadow={'5'}
+            rounded={'lg'}
+            style={
+              Platform.OS === 'web'
+                ? {
+                    shadowColor: '#171717',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 50,
+                    elevation: 3,
+                  }
+                : { borderWidth: 1, borderColor: '#AA58F4' }
+            }
             justifyContent={'space-between'}
             gap={4}
             px="10"
@@ -190,42 +275,63 @@ const FeedWeb = (props) => {
                   source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
                   style={{ height: 50, width: 50, borderRadius: 40 }}
                 />
-                <Text fontFamily={'Quicksand_700Bold'} fontSize={20}>
-                  Mario Leandro
-                </Text>
+                <Flex>
+                  <Text fontFamily={'Quicksand_700Bold'} fontSize={20}>
+                    {item.user?.name}
+                  </Text>
+                  <Text color={'gray.400'}>
+                    {formatDistanceToNow(new Date(item.createdAt), {
+                      locale: ptBR,
+                      addSuffix: true,
+                    })}
+                  </Text>
+                </Flex>
               </View>
             </Flex>
             <Divider />
             <Flex gap={4}>
-              <TextArea
+              {/* <TextArea
                 w={isTabletOrMobileDevice ? '100%' : '90%'}
                 h={140}
+                overflowY={'scroll'}
                 borderRadius={'lg'}
                 variant="unstyled"
                 size="xl"
-                value="Oi tudo bem ?"
+                value={item.text}
                 isReadOnly
                 p="4"
-              />
-              {image && (
+              /> */}
+              <ScrollView w={isTabletOrMobileDevice ? '100%' : '90%'} h={140} p="4">
+                <Text fontSize={16}>{item.text}</Text>
+              </ScrollView>
+              {item.image && (
                 <Image
                   alt="post"
-                  source={{ uri: image?.uri }}
-                  style={{ width: '100%', height: isTabletOrMobileDevice ? 200 : 500 }}
+                  bgColor={'black'}
+                  source={{ uri: `http://192.168.1.106:3001/${item.image}` }}
+                  style={{
+                    width: '100%',
+                    height: isTabletOrMobileDevice ? 200 : 500,
+                    borderRadius: 20,
+                  }}
                   resizeMode={'contain'}
                 />
               )}
             </Flex>
             <Flex direction="row" justifyContent={'flex-end'} w="100%">
               <Flex direction="row" alignItems={'center'}>
-                <TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedPost(item);
+                    onOpen();
+                  }}>
                   <MaterialCommunityIcons name="comment-outline" size={22} />
                 </TouchableOpacity>
               </Flex>
             </Flex>
           </Flex>
         )}
-        keyExtractor={(item, index) => item.id}
+        keyExtractor={(item, index) => item._id}
       />
       <Fab
         renderInPortal={false}
@@ -255,6 +361,7 @@ const FeedWeb = (props) => {
               <TextArea
                 w={'100%'}
                 h={140}
+                //ref={postText}
                 value={postText}
                 onChange={(e) => setPostText(e.currentTarget.value)}
                 onChangeText={(text) => setPostText(text)}
@@ -275,7 +382,11 @@ const FeedWeb = (props) => {
                   <Image
                     alt="post"
                     source={{ uri: image?.uri }}
-                    style={{ width: '100%', height: isTabletOrMobileDevice ? 200 : 500 }}
+                    style={{
+                      width: '100%',
+                      height: isTabletOrMobileDevice ? 200 : 500,
+                      borderRadius: 20,
+                    }}
                     resizeMode={'stretch'}
                   />
                 </Flex>
@@ -288,6 +399,7 @@ const FeedWeb = (props) => {
                     width: '100%',
                     height: isTabletOrMobileDevice ? 200 : 500,
                     objectFit: 'fill',
+                    borderRadius: 20,
                   }}
                 />
               )}
@@ -302,9 +414,9 @@ const FeedWeb = (props) => {
                 {Platform.OS === 'web' && (
                   <div {...dpZone.getRootProps()}>
                     <input id="inputImage" {...dpZone.getInputProps()} />
-                    <label htmlFor="inputImage" style={{ cursor: 'pointer' }}>
+                    <Box cursor={'pointer'}>
                       <Ionicons name="image-outline" size={22} />
-                    </label>
+                    </Box>
                   </div>
                 )}
                 {Platform.OS !== 'web' && (
@@ -317,6 +429,92 @@ const FeedWeb = (props) => {
           </Modal.Footer>
         </Modal.Content>
       </Modal>
+      <Actionsheet
+        isOpen={isOpen}
+        onClose={() => {
+          setSelectedPost(null);
+          onClose();
+        }}>
+        <Actionsheet.Content>
+          <Box w="100%" h={60} px={4} justifyContent="center">
+            <Text fontFamily={'Quicksand_700Bold'} fontSize={20}>
+              Comentários
+            </Text>
+          </Box>
+          <Divider />
+          <FlatList
+            showsVerticalScrollIndicator={true}
+            data={selectedPost?.comments.slice(0, 3)}
+            width={'full'}
+            ItemSeparatorComponent={() => <Divider />}
+            onEndReached={() => console.log('carregando...')}
+            renderItem={({ item }) => (
+              <Flex
+                w="full"
+                h={'auto'}
+                direction="column"
+                justifyContent={'space-between'}
+                gap={4}
+                px="10"
+                py="4">
+                <Flex>
+                  <View
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      alignSelf: 'flex-start',
+                      gap: 10,
+                    }}>
+                    <Image
+                      alt="post"
+                      source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
+                      style={{ height: 30, width: 30, borderRadius: 40 }}
+                    />
+                    <Text fontFamily={'Quicksand_700Bold'} fontSize={16}>
+                      {item.user.name}
+                    </Text>
+                    <Text color={'gray.400'}>
+                      {formatDistanceToNow(new Date(item.createdAt), {
+                        locale: ptBR,
+                        addSuffix: true,
+                      })}
+                    </Text>
+                  </View>
+                </Flex>
+                <Flex gap={4}>
+                  <ScrollView w={isTabletOrMobileDevice ? '100%' : '90%'} h={140} p="4">
+                    <Text fontSize={16}>{item.text}</Text>
+                  </ScrollView>
+                </Flex>
+              </Flex>
+            )}
+            keyExtractor={(item, index) => item._id}
+          />
+
+          <Divider />
+          <Flex direction="row" justifyContent={'space-between'} w="full" p="4">
+            <TextArea
+              w={'70%'}
+              h={60}
+              //ref={commentText}
+              value={commentText}
+              onChange={(e) => setCommentText(e.currentTarget.value)}
+              onChangeText={(text) => setCommentText(text)}
+              borderRadius={'lg'}
+              variant="unstyled"
+              placeholder="Deixe seu comentário"
+              size="lg"
+              p="4"
+              backgroundColor="gray.200"
+            />
+
+            <Button colorScheme={'violet'} minW={100} onPress={() => handleSaveComment()} w={'10%'}>
+              <Text color={'white'}>Comentar</Text>
+            </Button>
+          </Flex>
+        </Actionsheet.Content>
+      </Actionsheet>
     </View>
   );
 };

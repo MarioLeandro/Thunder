@@ -3,13 +3,14 @@ import { Alert, HStack, IconButton, Text, VStack } from 'native-base';
 const CustomToast = ({ id, status, variant, title, description, isClosable, ...rest }) => {
   return (
     <Alert
-      maxWidth="100%"
+      maxWidth="90%"
+      zIndex={9999}
       alignSelf="center"
       flexDirection="row"
       status={status ? status : 'info'}
       variant={variant}
       {...rest}>
-      <VStack space={1} flexShrink={1} w="90%">
+      <VStack space={1} flexShrink={1} w="xl">
         <HStack flexShrink={1} alignItems="center" justifyContent="space-between">
           <HStack space={2} flexShrink={1} alignItems="center">
             <Alert.Icon />

@@ -17,6 +17,8 @@ const Routes = () => {
     );
   }
 
+  console.log(loading, signed);
+
   return <>{signed ? <AppRoutes /> : <AuthRoutes />}</>;
 };
 export default Routes;
