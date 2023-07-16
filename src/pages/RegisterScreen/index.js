@@ -171,7 +171,7 @@ const RegisterScreen = ({ navigation }) => {
                     fontWeight: 'bold',
                     fontSize: 'sm',
                   }}
-                  href="#">
+                  onPress={() => navigation.navigate('Login')}>
                   Entrar
                 </Link>
               </HStack>

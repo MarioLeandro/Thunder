@@ -9,7 +9,8 @@ import AuthContext from '../contexts/auth';
 
 const LayoutWeb = ({ children }) => {
   const navigation = useNavigation();
-  const { signed, logout } = useContext(AuthContext);
+  const { logout, user } = useContext(AuthContext);
+  const experienceToNextLevel = Math.pow((user.level + 1) * 4, 2);
 
   const handleSignOut = async () => {
     await logout();
@@ -24,7 +25,6 @@ const LayoutWeb = ({ children }) => {
 
   useEffect(() => {
     getCurrentRoute();
-    console.log('aki');
   }, [navigation]);
 
   const route = useRoute();
@@ -41,14 +41,19 @@ const LayoutWeb = ({ children }) => {
             style={{ height: 80, width: 80, borderRadius: 40, marginBottom: 10 }}
           />
           <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'Quicksand_700Bold' }}>
-            Mario Leandro
+            {user.name}
           </Text>
           <HStack space={'1.5'} alignItems={'center'}>
-            <Text style={{ color: '#fff', fontFamily: 'Quicksand_400Regular' }}>Nível 200</Text>
+            <Text style={{ color: '#fff', fontFamily: 'Quicksand_400Regular' }}>
+              Nível {user.level || 0}
+            </Text>
             <MaterialCommunityIcons name="lightning-bolt" size={14} color="white" />
           </HStack>
           <Box w="50%" maxW="400" mt="4">
-            <Progress value={45} colorScheme="light" />
+            <Progress
+              value={(user.currentExperience / experienceToNextLevel) * 100 || 0}
+              colorScheme="light"
+            />
           </Box>
         </View>
         <View style={{ flex: 1, justifyContent: 'space-between' }}>

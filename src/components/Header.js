@@ -1,8 +1,12 @@
 import { Box, Flex, Progress } from 'native-base';
-import React from 'react';
+import React, { useContext } from 'react';
 import { Image, Text, TouchableOpacity } from 'react-native';
+import AuthContext from '../contexts/auth';
 
 const Header = ({ navigation, route, options }) => {
+  const { user } = useContext(AuthContext);
+  const experienceToNextLevel = Math.pow((user.level + 1) * 4, 2);
+
   return (
     <Flex
       w="full"
@@ -20,10 +24,13 @@ const Header = ({ navigation, route, options }) => {
       </TouchableOpacity>
 
       <Box w="50%" maxW="400">
-        <Progress value={45} colorScheme="light" />
+        <Progress
+          value={(user.currentExperience / experienceToNextLevel) * 100 || 0}
+          colorScheme="light"
+        />
       </Box>
       <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'Quicksand_700Bold' }}>
-        Nível 200
+        Nível {user.level || 0}
       </Text>
     </Flex>
   );

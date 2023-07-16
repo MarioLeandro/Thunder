@@ -7,7 +7,7 @@ import AuthContext from '../contexts/auth';
 import { useNavigation } from '@react-navigation/native';
 
 const CustomDrawer = (props) => {
-  const { signed, logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const navigation = useNavigation();
 
   const handleSignOut = async () => {
@@ -24,10 +24,12 @@ const CustomDrawer = (props) => {
             style={{ height: 80, width: 80, borderRadius: 40, marginBottom: 10 }}
           />
           <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'Quicksand_700Bold' }}>
-            Mario Leandro
+            {user.name}
           </Text>
           <HStack space={'1.5'} alignItems={'center'}>
-            <Text style={{ color: '#fff', fontFamily: 'Quicksand_400Regular' }}>Nível 200</Text>
+            <Text style={{ color: '#fff', fontFamily: 'Quicksand_400Regular' }}>
+              Nível {user.level || 0}
+            </Text>
             <MaterialCommunityIcons name="lightning-bolt" size={14} color="white" />
           </HStack>
         </View>
