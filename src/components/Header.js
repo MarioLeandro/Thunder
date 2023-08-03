@@ -1,4 +1,4 @@
-import { Box, Flex, Progress } from 'native-base';
+import { Avatar, Box, Flex, Progress } from 'native-base';
 import React, { useContext } from 'react';
 import { Image, Text, TouchableOpacity } from 'react-native';
 import AuthContext from '../contexts/auth';
@@ -17,10 +17,14 @@ const Header = ({ navigation, route, options }) => {
       justifyContent={'space-between'}
       px="4">
       <TouchableOpacity onPress={navigation.openDrawer}>
-        <Image
-          source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
-          style={{ height: 50, width: 50, borderRadius: 40, marginBottom: 10 }}
-        />
+        <Avatar
+          bg="lightBlue.400"
+          size="lg"
+          source={{
+            uri: `http://192.168.1.106:3001/${user.picture}`,
+          }}>
+          {user.name.charAt(0)}
+        </Avatar>
       </TouchableOpacity>
 
       <Box w="50%" maxW="400">

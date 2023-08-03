@@ -2,6 +2,7 @@ import React from 'react';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TutorialScreen from '../pages/TutorialScreen';
+import FoodScreen from '../pages/FoodScreen';
 import { useMediaQuery } from 'react-responsive';
 import LayoutWeb from '../components/LayoutWeb';
 import CustomDrawer from '../components/CustomDrawer';
@@ -53,7 +54,7 @@ const AppRoutes = () => {
           />
           <Drawer.Screen
             name="Food"
-            component={TutorialScreen}
+            component={FoodScreen}
             options={{
               drawerIcon: ({ color }) => (
                 <MaterialCommunityIcons name="silverware-fork-knife" size={22} color={color} />
@@ -70,7 +71,7 @@ const AppRoutes = () => {
     <AppStack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
       <AppStack.Screen name="Home" component={FeedScreen} />
       <AppStack.Screen name="Training" component={TutorialScreen} />
-      <AppStack.Screen name="Food" component={TutorialScreen} />
+      <AppStack.Screen name="Food" component={FoodScreen} />
     </AppStack.Navigator>
   );
 };

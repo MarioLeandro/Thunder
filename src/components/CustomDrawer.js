@@ -2,7 +2,7 @@ import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawe
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { Flex, HStack } from 'native-base';
+import { Avatar, Flex, HStack } from 'native-base';
 import AuthContext from '../contexts/auth';
 import { useNavigation } from '@react-navigation/native';
 
@@ -19,10 +19,18 @@ const CustomDrawer = (props) => {
     <View style={{ flex: 1 }}>
       <DrawerContentScrollView contentContainerStyle={{ backgroundColor: '#AA58F4' }}>
         <View style={{ padding: 20 }}>
-          <Image
-            source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
-            style={{ height: 80, width: 80, borderRadius: 40, marginBottom: 10 }}
-          />
+          <TouchableOpacity
+            onPress={() => console.log('oi')}
+            style={{ height: 80, width: 80, borderRadius: 40, marginBottom: 10 }}>
+            <Avatar
+              bg="lightBlue.400"
+              size="lg"
+              source={{
+                uri: `http://192.168.1.106:3001/${user.picture}`,
+              }}>
+              {user.name.charAt(0)}
+            </Avatar>
+          </TouchableOpacity>
           <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'Quicksand_700Bold' }}>
             {user.name}
           </Text>

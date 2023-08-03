@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
@@ -16,6 +16,7 @@ import {
   Actionsheet,
   useDisclose,
   ScrollView,
+  Avatar,
 } from 'native-base';
 import * as ImagePicker from 'expo-image-picker';
 import { useMediaQuery } from 'react-responsive';
@@ -25,9 +26,12 @@ import CustomToast from '../../components/CustomToast';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import LayoutWeb from '../../components/LayoutWeb';
+import AuthContext from '../../contexts/auth';
 
 const FeedScreen = (props) => {
   const toast = useToast();
+  const { user, logout, levelUp } = useContext(AuthContext);
+
   const { isOpen, onOpen, onClose } = useDisclose();
 
   const [image, setImage] = useState(null);
@@ -66,7 +70,7 @@ const FeedScreen = (props) => {
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [levelUp]);
 
   const pickImage = async () => {
     const { assets, canceled } = await ImagePicker.launchImageLibraryAsync({
@@ -272,11 +276,14 @@ const FeedScreen = (props) => {
                     alignSelf: 'flex-start',
                     gap: 10,
                   }}>
-                  <Image
-                    alt="post"
-                    source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
-                    style={{ height: 50, width: 50, borderRadius: 40 }}
-                  />
+                  <Avatar
+                    bg="lightBlue.400"
+                    size="md"
+                    source={{
+                      uri: `http://192.168.1.106:3001/${item.user.picture}`,
+                    }}>
+                    {item.user.name.charAt(0)}
+                  </Avatar>
                   <Flex>
                     <Text fontFamily={'Quicksand_700Bold'} fontSize={20}>
                       {item.user?.name}
@@ -349,13 +356,16 @@ const FeedScreen = (props) => {
             <Modal.Header>
               <View
                 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Image
-                  alt="post"
-                  source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
-                  style={{ height: 50, width: 50, borderRadius: 40 }}
-                />
+                <Avatar
+                  bg="lightBlue.400"
+                  size="md"
+                  source={{
+                    uri: `http://192.168.1.106:3001/${user.picture}`,
+                  }}>
+                  {user.name.charAt(0)}
+                </Avatar>
                 <Text fontFamily={'Quicksand_700Bold'} fontSize={20}>
-                  Mario Leandro
+                  {user.name}
                 </Text>
               </View>
             </Modal.Header>
@@ -364,7 +374,6 @@ const FeedScreen = (props) => {
                 <TextArea
                   w={'100%'}
                   h={140}
-                  //ref={postText}
                   value={postText}
                   onChange={(e) => setPostText(e.currentTarget.value)}
                   onChangeText={(text) => setPostText(text)}
@@ -469,11 +478,14 @@ const FeedScreen = (props) => {
                         alignSelf: 'flex-start',
                         gap: 10,
                       }}>
-                      <Image
-                        alt="post"
-                        source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
-                        style={{ height: 30, width: 30, borderRadius: 40 }}
-                      />
+                      <Avatar
+                        bg="lightBlue.400"
+                        size="md"
+                        source={{
+                          uri: `http://192.168.1.106:3001/${item.user.picture}`,
+                        }}>
+                        {item.user.name.charAt(0)}
+                      </Avatar>
                       <Text fontFamily={'Quicksand_700Bold'} fontSize={16}>
                         {item.user.name}
                       </Text>
@@ -567,11 +579,14 @@ const FeedScreen = (props) => {
                     alignSelf: 'flex-start',
                     gap: 10,
                   }}>
-                  <Image
-                    alt="post"
-                    source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
-                    style={{ height: 50, width: 50, borderRadius: 40 }}
-                  />
+                  <Avatar
+                    bg="lightBlue.400"
+                    size="md"
+                    source={{
+                      uri: `http://192.168.1.106:3001/${item.user.picture}`,
+                    }}>
+                    {item.user.name.charAt(0)}
+                  </Avatar>
                   <Flex>
                     <Text fontFamily={'Quicksand_700Bold'} fontSize={20}>
                       {item.user?.name}
@@ -644,13 +659,16 @@ const FeedScreen = (props) => {
             <Modal.Header>
               <View
                 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Image
-                  alt="post"
-                  source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
-                  style={{ height: 50, width: 50, borderRadius: 40 }}
-                />
+                <Avatar
+                  bg="lightBlue.400"
+                  size="md"
+                  source={{
+                    uri: `http://192.168.1.106:3001/${user.picture}`,
+                  }}>
+                  {user.name.charAt(0)}
+                </Avatar>
                 <Text fontFamily={'Quicksand_700Bold'} fontSize={20}>
-                  Mario Leandro
+                  {user.name}
                 </Text>
               </View>
             </Modal.Header>
@@ -764,11 +782,14 @@ const FeedScreen = (props) => {
                         alignSelf: 'flex-start',
                         gap: 10,
                       }}>
-                      <Image
-                        alt="post"
-                        source={{ uri: 'https://avatars.githubusercontent.com/u/63363561?v=4' }}
-                        style={{ height: 30, width: 30, borderRadius: 40 }}
-                      />
+                      <Avatar
+                        bg="lightBlue.400"
+                        size="md"
+                        source={{
+                          uri: 'https://avatars.githubusercontent.com/u/63363561?v=4',
+                        }}>
+                        {item.user.name.charAt(0)}
+                      </Avatar>
                       <Text fontFamily={'Quicksand_700Bold'} fontSize={16}>
                         {item.user.name}
                       </Text>

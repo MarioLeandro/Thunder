@@ -7,6 +7,10 @@ import { LevelUpModal } from '../../../components/LevelUpModal';
 import { Center, Spinner } from 'native-base';
 import AuthContext from '../../../contexts/auth';
 import api from '../../../services/api';
+const imgOne = require('../../../../assets/tutorial-screen/imgOne.jpg');
+const imgTwo = require('../../../../assets/tutorial-screen/imgTwo.jpg');
+const imgThree = require('../../../../assets/tutorial-screen/imgThree.jpg');
+const imgFour = require('../../../../assets/tutorial-screen/imgFour.png');
 
 const TutorialMobile = (props) => {
   const { user, setLevelUp } = useContext(AuthContext);
@@ -80,12 +84,21 @@ const TutorialMobile = (props) => {
         renderPrevButton={() => (
           <Ionicons name="arrow-back-circle-outline" size={52} color="#434343" />
         )}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <View style={{ height: Math.round(height * 0.55) }}>
-            <Card item={item} />
+            <Card
+              item={item}
+              key={item}
+              image={item}
+              number={index + 1}
+              title={'Agachamento'}
+              description={
+                'Realize 3 séries de 12 repetições de agachamento. Descanse por 60 segundos entre as séries.'
+              }
+            />
           </View>
         )}
-        data={[1, 2, 3, 4]}
+        data={[imgOne, imgTwo, imgThree, imgFour]}
         activeDotStyle={{
           backgroundColor: '#009cff',
           width: 30,

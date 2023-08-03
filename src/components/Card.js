@@ -2,9 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, useWindowDimensions } from 'react-native';
 import { useMediaQuery } from 'react-responsive';
 
-const img = require('../../assets/tutorial-screen/imgOne.png');
-
 const Card = ({ title, description, image, number, item }) => {
+  console.log(image);
   const { height, width } = useWindowDimensions();
 
   const isTabletOrMobileDevice = useMediaQuery({
@@ -12,10 +11,11 @@ const Card = ({ title, description, image, number, item }) => {
   });
 
   if (isTabletOrMobileDevice) {
+    console.log(item);
     return (
       <View style={styles.screen}>
         <Image
-          source={img}
+          source={{ uri: item }}
           style={{
             width: Math.round(width * 0.6),
             height: Math.round(height * 0.23),
@@ -28,7 +28,7 @@ const Card = ({ title, description, image, number, item }) => {
             paddingHorizontal: 10,
             ...styles.textTitle,
           }}>
-          Titulo
+          {title}
         </Text>
         <Text
           style={{
@@ -36,8 +36,7 @@ const Card = ({ title, description, image, number, item }) => {
             paddingHorizontal: 10,
             ...styles.subTextTitle,
           }}>
-          No seu board e de seus colegas, é possível visualizar os feedbacks recebidos, utilize este
-          espaço para enviar comentarios a outros frequentadores
+          {description}
         </Text>
         <View
           style={{
@@ -51,7 +50,7 @@ const Card = ({ title, description, image, number, item }) => {
               fontFamily: 'Quicksand_700Bold',
               color: '#1890FF',
             }}>
-            1
+            {number}
           </Text>
         </View>
       </View>
@@ -61,7 +60,7 @@ const Card = ({ title, description, image, number, item }) => {
   return (
     <View style={styles.screen}>
       <Image
-        source={img}
+        source={{ uri: image }}
         style={{
           width: Math.round(width * 0.15),
           height: Math.round(height * 0.23),
@@ -70,7 +69,7 @@ const Card = ({ title, description, image, number, item }) => {
       />
       <Text
         style={{ fontSize: Math.round(width * 0.015), paddingHorizontal: 10, ...styles.textTitle }}>
-        Titulo
+        {title}
       </Text>
       <Text
         style={{
@@ -78,8 +77,7 @@ const Card = ({ title, description, image, number, item }) => {
           paddingHorizontal: 10,
           ...styles.subTextTitle,
         }}>
-        No seu board e de seus colegas, é possível visualizar os feedbacks recebidos, utilize este
-        espaço para enviar comentarios a outros frequentadores
+        {description}
       </Text>
       <View
         style={{
@@ -93,7 +91,7 @@ const Card = ({ title, description, image, number, item }) => {
             fontFamily: 'Quicksand_700Bold',
             color: '#1890FF',
           }}>
-          1
+          {number}
         </Text>
       </View>
     </View>

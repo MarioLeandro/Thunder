@@ -6,6 +6,10 @@ import { LevelUpModal } from '../../../components/LevelUpModal';
 import AuthContext from '../../../contexts/auth';
 import { Center, Spinner } from 'native-base';
 import api from '../../../services/api';
+const imgOne = require('../../../../assets/tutorial-screen/imgOne.jpg');
+const imgTwo = require('../../../../assets/tutorial-screen/imgTwo.jpg');
+const imgThree = require('../../../../assets/tutorial-screen/imgThree.jpg');
+const imgFour = require('../../../../assets/tutorial-screen/imgFour.png');
 
 const TutorialWeb = (props) => {
   const { user, setLevelUp } = useContext(AuthContext);
@@ -71,8 +75,16 @@ const TutorialWeb = (props) => {
         </Text>
       </View>
       <View style={{ ...styles.steps, height: Math.round(height * 0.5) }}>
-        {[1, 2, 3, 4].map((number) => (
-          <Card key={number} />
+        {[imgOne, imgTwo, imgThree, imgFour].map((img, index) => (
+          <Card
+            key={index}
+            image={img}
+            number={index + 1}
+            title={'Agachamento'}
+            description={
+              'Realize 3 séries de 12 repetições de agachamento. Descanse por 60 segundos entre as séries.'
+            }
+          />
         ))}
       </View>
       <TouchableOpacity style={styles.nextButton} underlayColor="white">
