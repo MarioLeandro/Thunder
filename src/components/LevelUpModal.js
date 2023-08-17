@@ -6,14 +6,19 @@ import { Image, ImageBackground, Text } from 'react-native';
 
 const imgBackground = require('../../assets/tutorial-screen/levelup.png');
 
-export function LevelUpModal({ isLevelUpModalOpen, setIsLevelUpModalOpen }) {
+export function LevelUpModal({ isLevelUpModalOpen, setIsLevelUpModalOpen, clear }) {
   const { user } = useContext(AuthContext);
   const isTabletOrMobileDevice = useMediaQuery({
     maxDeviceWidth: 1224,
   });
 
   return (
-    <Modal isOpen={isLevelUpModalOpen} onClose={() => setIsLevelUpModalOpen(false)}>
+    <Modal
+      isOpen={isLevelUpModalOpen}
+      onClose={() => {
+        setIsLevelUpModalOpen(false);
+        clear();
+      }}>
       <Modal.Content>
         <Modal.CloseButton />
         <Modal.Body>

@@ -4,15 +4,18 @@ import { Ionicons } from '@expo/vector-icons';
 import Card from '../../../components/Card';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import { LevelUpModal } from '../../../components/LevelUpModal';
-import { Center, Spinner } from 'native-base';
+import { Center, Spinner, useToast } from 'native-base';
 import AuthContext from '../../../contexts/auth';
 import api from '../../../services/api';
+import CustomToast from '../../../components/CustomToast';
 const imgOne = require('../../../../assets/tutorial-screen/imgOne.jpg');
 const imgTwo = require('../../../../assets/tutorial-screen/imgTwo.jpg');
 const imgThree = require('../../../../assets/tutorial-screen/imgThree.jpg');
 const imgFour = require('../../../../assets/tutorial-screen/imgFour.png');
 
 const TutorialMobile = (props) => {
+  const toast = useToast();
+
   const { user, setLevelUp } = useContext(AuthContext);
 
   const { height, width } = useWindowDimensions();
@@ -61,6 +64,7 @@ const TutorialMobile = (props) => {
       setIsLevelIncreasing(false);
     }
   }
+  console.log(isLevelUpModalOpen);
 
   return !isLevelIncreasing ? (
     <View
@@ -87,14 +91,11 @@ const TutorialMobile = (props) => {
         renderItem={({ item, index }) => (
           <View style={{ height: Math.round(height * 0.55) }}>
             <Card
+              key={index}
               item={item}
-              key={item}
-              image={item}
               number={index + 1}
-              title={'Agachamento'}
-              description={
-                'Realize 3 séries de 12 repetições de agachamento. Descanse por 60 segundos entre as séries.'
-              }
+              title={props.data?.passos[index].exercicio || ''}
+              description={props.data?.passos[index].descricao || ''}
             />
           </View>
         )}
@@ -108,6 +109,7 @@ const TutorialMobile = (props) => {
       <LevelUpModal
         isLevelUpModalOpen={isLevelUpModalOpen}
         setIsLevelUpModalOpen={setIsLevelUpModalOpen}
+        clear={props.clear}
       />
     </View>
   ) : (

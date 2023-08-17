@@ -1,4 +1,5 @@
 import { useMediaQuery } from 'react-responsive';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import {
   Box,
@@ -6,32 +7,28 @@ import {
   Center,
   Flex,
   FormControl,
-  HStack,
   Heading,
-  Icon,
   Input,
-  Link,
-  Pressable,
   ScrollView,
-  Select,
+  Spinner,
   Switch,
   Text,
   VStack,
+  useToast,
 } from 'native-base';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-const day = require('../../../assets/food-screen/day.jpg');
-const evening = require('../../../assets/food-screen/evening.jpg');
-const night = require('../../../assets/food-screen/night.jpg');
-
-import { Parallax, ParallaxLayer } from '@react-spring/parallax';
-
 import LayoutWeb from '../../components/LayoutWeb';
-import { LinearGradient } from 'expo-linear-gradient';
+import CustomToast from '../../components/CustomToast';
+import api from '../../services/api';
 
 export default function FoodScreen() {
+  const toast = useToast();
+
   const [fooding, setFooding] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [dietData, setDietData] = useState(null);
   const { height, width } = useWindowDimensions();
 
   const [isUserVegan, setIsUserVegan] = useState(false);
@@ -41,6 +38,108 @@ export default function FoodScreen() {
   const isTabletOrMobileDevice = useMediaQuery({
     maxDeviceWidth: 1224,
   });
+
+  useEffect(() => {
+    const getDietStorage = async () => {
+      const data = await AsyncStorage.getItem('@Thunder:diet');
+
+      if (data) {
+        setDietData(JSON.parse(data).diet);
+        setFooding(true);
+      }
+    };
+    getDietStorage();
+  }, []);
+
+  const handleGetDiet = async () => {
+    if (!userWeigth || !userHeight) {
+      return toast.show({
+        placement: 'bottom',
+        render: () => {
+          return (
+            <CustomToast
+              description={'Preencha todos os campos'}
+              title={'Erro'}
+              variant={'solid'}
+              duration={1000}
+              status={'error'}
+            />
+          );
+        },
+      });
+    }
+    setLoading(true);
+    try {
+      const { data } = await api.post('/diet', {
+        isVegan: isUserVegan,
+        height: userHeight,
+        weight: userWeigth,
+      });
+
+      setDietData(data);
+      await AsyncStorage.setItem(
+        '@Thunder:diet',
+        JSON.stringify({ diet: data, isVegan: isUserVegan })
+      );
+      setFooding(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGetChangeDiet = async (group, food) => {
+    setLoading(true);
+    try {
+      const dietRes = await AsyncStorage.getItem('@Thunder:diet');
+
+      const { data } = await api.post('/diet/change', {
+        currentDiet: JSON.parse(dietRes).diet,
+        isVegan: JSON.parse(dietRes).isVegan,
+        group,
+        food,
+      });
+
+      setDietData(data);
+      await AsyncStorage.setItem(
+        '@Thunder:diet',
+        JSON.stringify({ diet: data, isVegan: JSON.parse(dietRes).isVegan })
+      );
+      setFooding(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clear = async () => {
+    await AsyncStorage.removeItem('@Thunder:diet');
+    setDietData(null);
+    setFooding(false);
+    setIsUserVegan(false);
+    setUserWeigth('');
+    setUserHeight('');
+  };
+
+  if (loading) {
+    if (isTabletOrMobileDevice) {
+      return (
+        <Center height={'full'} width={'full'}>
+          <Spinner />
+        </Center>
+      );
+    } else {
+      return (
+        <LayoutWeb>
+          <Center height={'full'} width={'full'}>
+            <Spinner />
+          </Center>
+        </LayoutWeb>
+      );
+    }
+  }
 
   if (!fooding) {
     if (isTabletOrMobileDevice) {
@@ -65,13 +164,25 @@ export default function FoodScreen() {
                 fontFamily={'Quicksand_400Regular'}>
                 Preencha as informações abaixo para uma dieta mais preciso e especifico!
               </Heading>
-
+              <Center>
+                <Heading
+                  mt="4"
+                  color="red.700"
+                  fontWeight="medium"
+                  size="xs"
+                  textAlign={'center'}
+                  fontFamily={'Quicksand_400Regular'}>
+                  Lembrando que Inteligência Artificial não substitui um profissional
+                </Heading>
+                <Ionicons name="warning" size={24} color="red" />
+              </Center>
               <VStack space={3} mt="5">
                 <FormControl>
                   <FormControl.Label _text={{ color: 'black' }}>Altura</FormControl.Label>
                   <Input
                     size={'lg'}
                     bgColor={'coolGray.100'}
+                    placeholder="Ex: 1.72m"
                     value={userHeight}
                     onChangeText={(text) => setUserHeight(text)}
                   />
@@ -81,6 +192,7 @@ export default function FoodScreen() {
                   <Input
                     size={'lg'}
                     bgColor={'coolGray.100'}
+                    placeholder="Ex: 60kg"
                     value={userWeigth}
                     onChangeText={(text) => setUserWeigth(text)}
                   />
@@ -90,7 +202,7 @@ export default function FoodScreen() {
                   <Switch colorScheme="primary" value={isUserVegan} />
                 </FormControl>
 
-                <Button mt="2" colorScheme={'coolGray'} onPress={() => setFooding(true)}>
+                <Button mt="2" colorScheme={'coolGray'} onPress={() => handleGetDiet()}>
                   Gerar dieta
                 </Button>
               </VStack>
@@ -121,13 +233,25 @@ export default function FoodScreen() {
                   fontFamily={'Quicksand_400Regular'}>
                   Preencha as informações abaixo para uma dieta mais preciso e especifico!
                 </Heading>
-
+                <Center>
+                  <Heading
+                    mt="4"
+                    color="red.700"
+                    fontWeight="medium"
+                    size="xs"
+                    textAlign={'center'}
+                    fontFamily={'Quicksand_400Regular'}>
+                    Lembrando que Inteligência Artificial não substitui um profissional
+                  </Heading>
+                  <Ionicons name="warning" size={24} color="red" />
+                </Center>
                 <VStack space={3} mt="5">
                   <FormControl>
                     <FormControl.Label _text={{ color: 'black' }}>Altura</FormControl.Label>
                     <Input
                       size={'lg'}
                       bgColor={'coolGray.100'}
+                      placeholder="Ex: 1.72m"
                       value={userHeight}
                       onChangeText={(text) => setUserHeight(text)}
                     />
@@ -137,6 +261,7 @@ export default function FoodScreen() {
                     <Input
                       size={'lg'}
                       bgColor={'coolGray.100'}
+                      placeholder="Ex: 60kg"
                       value={userWeigth}
                       onChangeText={(text) => setUserWeigth(text)}
                     />
@@ -148,7 +273,7 @@ export default function FoodScreen() {
                     <Switch colorScheme="primary" value={isUserVegan} />
                   </FormControl>
 
-                  <Button mt="2" colorScheme={'coolGray'} onPress={() => setFooding(true)}>
+                  <Button mt="2" colorScheme={'coolGray'} onPress={() => handleGetDiet()}>
                     Gerar dieta
                   </Button>
                 </VStack>
@@ -163,7 +288,7 @@ export default function FoodScreen() {
   if (isTabletOrMobileDevice) {
     return (
       <ScrollView style={{ flex: 1 }}>
-        <LinearGradient colors={['#FFE749', '#FC9305', '#002C91']} style={{ padding: 10 }}>
+        <Flex style={{ padding: 10 }}>
           <Flex
             justifyContent="center"
             alignItems="center"
@@ -182,31 +307,11 @@ export default function FoodScreen() {
               Café da Manhã
             </Heading>
             <Flex gap={4}>
-              {[
-                {
-                  alimento: '🍳 Omelete de claras com espinafre e tomate ',
-                  quantidade: '3 claras de ovo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🥣 Aveia com frutas',
-                  quantidade: '1/2 xícara de aveia',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍊 Suco de laranja natural',
-                  quantidade: '1 copo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍯 Iogurte grego com amêndoas e mel',
-                  quantidade: '200g de iogurte grego',
-                  horario: '08:00',
-                },
-              ].map((food, index) => (
+              {dietData?.cafe_da_manha?.map((food, index) => (
                 <Flex
                   key={index}
                   borderWidth={'1'}
+                  minW={'90%'}
                   p={4}
                   borderRadius={'sm'}
                   alignItems={'center'}
@@ -233,7 +338,9 @@ export default function FoodScreen() {
                     fontFamily={'Quicksand_400Regular'}>
                     Quantidade: {food.quantidade}
                   </Text>
-                  <TouchableOpacity style={{ marginTop: 8 }}>
+                  <TouchableOpacity
+                    style={{ marginTop: 8 }}
+                    onPress={() => handleGetChangeDiet('cafe_da_manha', food.alimento)}>
                     <Box bgColor={'white'} borderRadius={'full'}>
                       <MaterialCommunityIcons name="restart" size={24} color="black" />
                     </Box>
@@ -261,31 +368,11 @@ export default function FoodScreen() {
               Almoço
             </Heading>
             <Flex gap={4}>
-              {[
-                {
-                  alimento: '🍳 Omelete de claras com espinafre e tomate ',
-                  quantidade: '3 claras de ovo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🥣 Aveia com frutas',
-                  quantidade: '1/2 xícara de aveia',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍊 Suco de laranja natural',
-                  quantidade: '1 copo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍯 Iogurte grego com amêndoas e mel',
-                  quantidade: '200g de iogurte grego',
-                  horario: '08:00',
-                },
-              ].map((food, index) => (
+              {dietData?.almoco?.map((food, index) => (
                 <Flex
                   key={index}
                   borderWidth={'1'}
+                  minW={'90%'}
                   p={4}
                   borderRadius={'sm'}
                   alignItems={'center'}
@@ -340,31 +427,11 @@ export default function FoodScreen() {
               Janta
             </Heading>
             <Flex gap={4}>
-              {[
-                {
-                  alimento: '🍳 Omelete de claras com espinafre e tomate ',
-                  quantidade: '3 claras de ovo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🥣 Aveia com frutas',
-                  quantidade: '1/2 xícara de aveia',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍊 Suco de laranja natural',
-                  quantidade: '1 copo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍯 Iogurte grego com amêndoas e mel',
-                  quantidade: '200g de iogurte grego',
-                  horario: '08:00',
-                },
-              ].map((food, index) => (
+              {dietData?.jantar?.map((food, index) => (
                 <Flex
                   key={index}
                   borderWidth={'1'}
+                  minW={'90%'}
                   p={4}
                   borderRadius={'sm'}
                   alignItems={'center'}
@@ -400,7 +467,8 @@ export default function FoodScreen() {
               ))}
             </Flex>
           </Flex>
-        </LinearGradient>
+        </Flex>
+        <Button onPress={clear}>Alterar</Button>
       </ScrollView>
     );
   }
@@ -408,7 +476,7 @@ export default function FoodScreen() {
   return (
     <LayoutWeb>
       <ScrollView style={{ flex: 1 }}>
-        <LinearGradient colors={['#FFE749', '#FC9305', '#002C91']} style={{ padding: 10 }}>
+        <Flex style={{ padding: 10 }}>
           <Flex
             justifyContent="center"
             alignItems="center"
@@ -427,31 +495,11 @@ export default function FoodScreen() {
               Café da Manhã
             </Heading>
             <Flex gap={4}>
-              {[
-                {
-                  alimento: '🍳 Omelete de claras com espinafre e tomate ',
-                  quantidade: '3 claras de ovo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🥣 Aveia com frutas',
-                  quantidade: '1/2 xícara de aveia',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍊 Suco de laranja natural',
-                  quantidade: '1 copo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍯 Iogurte grego com amêndoas e mel',
-                  quantidade: '200g de iogurte grego',
-                  horario: '08:00',
-                },
-              ].map((food, index) => (
+              {dietData?.cafe_da_manha?.map((food, index) => (
                 <Flex
                   key={index}
                   borderWidth={'1'}
+                  minW={'90%'}
                   p={4}
                   borderRadius={'sm'}
                   alignItems={'center'}
@@ -478,7 +526,9 @@ export default function FoodScreen() {
                     fontFamily={'Quicksand_400Regular'}>
                     Quantidade: {food.quantidade}
                   </Text>
-                  <TouchableOpacity style={{ marginTop: 8 }}>
+                  <TouchableOpacity
+                    style={{ marginTop: 8 }}
+                    onPress={() => handleGetChangeDiet('cafe_da_manha', food.alimento)}>
                     <Box bgColor={'white'} borderRadius={'full'}>
                       <MaterialCommunityIcons name="restart" size={24} color="black" />
                     </Box>
@@ -506,31 +556,11 @@ export default function FoodScreen() {
               Almoço
             </Heading>
             <Flex gap={4}>
-              {[
-                {
-                  alimento: '🍳 Omelete de claras com espinafre e tomate ',
-                  quantidade: '3 claras de ovo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🥣 Aveia com frutas',
-                  quantidade: '1/2 xícara de aveia',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍊 Suco de laranja natural',
-                  quantidade: '1 copo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍯 Iogurte grego com amêndoas e mel',
-                  quantidade: '200g de iogurte grego',
-                  horario: '08:00',
-                },
-              ].map((food, index) => (
+              {dietData?.almoco?.map((food, index) => (
                 <Flex
                   key={index}
                   borderWidth={'1'}
+                  minW={'90%'}
                   p={4}
                   borderRadius={'sm'}
                   alignItems={'center'}
@@ -585,31 +615,11 @@ export default function FoodScreen() {
               Janta
             </Heading>
             <Flex gap={4}>
-              {[
-                {
-                  alimento: '🍳 Omelete de claras com espinafre e tomate ',
-                  quantidade: '3 claras de ovo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🥣 Aveia com frutas',
-                  quantidade: '1/2 xícara de aveia',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍊 Suco de laranja natural',
-                  quantidade: '1 copo',
-                  horario: '08:00',
-                },
-                {
-                  alimento: '🍯 Iogurte grego com amêndoas e mel',
-                  quantidade: '200g de iogurte grego',
-                  horario: '08:00',
-                },
-              ].map((food, index) => (
+              {dietData?.jantar?.map((food, index) => (
                 <Flex
                   key={index}
                   borderWidth={'1'}
+                  minW={'90%'}
                   p={4}
                   borderRadius={'sm'}
                   alignItems={'center'}
@@ -645,7 +655,8 @@ export default function FoodScreen() {
               ))}
             </Flex>
           </Flex>
-        </LinearGradient>
+        </Flex>
+        <Button onPress={clear}>Alterar</Button>
       </ScrollView>
     </LayoutWeb>
   );

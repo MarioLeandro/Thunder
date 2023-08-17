@@ -313,7 +313,7 @@ const LayoutWeb = ({ children }) => {
                   bg="lightBlue.400"
                   size="2xl"
                   source={{
-                    uri: 'https://avatars.githubusercontent.com/u/63363561?v=4',
+                    uri: `http://192.168.1.106:3001/${user.picture}`,
                   }}>
                   {user.name.charAt(0)}
                 </Avatar>

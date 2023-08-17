@@ -4,14 +4,17 @@ import { Ionicons } from '@expo/vector-icons';
 import Card from '../../../components/Card';
 import { LevelUpModal } from '../../../components/LevelUpModal';
 import AuthContext from '../../../contexts/auth';
-import { Center, Spinner } from 'native-base';
+import { Center, Spinner, useToast } from 'native-base';
 import api from '../../../services/api';
+import CustomToast from '../../../components/CustomToast';
 const imgOne = require('../../../../assets/tutorial-screen/imgOne.jpg');
 const imgTwo = require('../../../../assets/tutorial-screen/imgTwo.jpg');
 const imgThree = require('../../../../assets/tutorial-screen/imgThree.jpg');
 const imgFour = require('../../../../assets/tutorial-screen/imgFour.png');
 
 const TutorialWeb = (props) => {
+  const toast = useToast();
+
   const { user, setLevelUp } = useContext(AuthContext);
 
   const { height, width } = useWindowDimensions();
@@ -58,6 +61,7 @@ const TutorialWeb = (props) => {
         setIsLevelUpModalOpen(true);
       }
       setIsLevelIncreasing(false);
+      props.clear();
     }
   }
 
@@ -80,10 +84,8 @@ const TutorialWeb = (props) => {
             key={index}
             image={img}
             number={index + 1}
-            title={'Agachamento'}
-            description={
-              'Realize 3 séries de 12 repetições de agachamento. Descanse por 60 segundos entre as séries.'
-            }
+            title={props.data.passos[index].exercicio}
+            description={props.data.passos[index].descricao}
           />
         ))}
       </View>

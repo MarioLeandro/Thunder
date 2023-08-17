@@ -15,7 +15,7 @@ const Card = ({ title, description, image, number, item }) => {
     return (
       <View style={styles.screen}>
         <Image
-          source={{ uri: item }}
+          source={item}
           style={{
             width: Math.round(width * 0.6),
             height: Math.round(height * 0.23),

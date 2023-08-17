@@ -80,18 +80,22 @@ const FeedScreen = (props) => {
       aspect: [4, 4],
       quality: 1,
     });
+    console.log(assets[0]);
+    const filename = assets[0].uri.substring(
+      assets[0].uri.lastIndexOf('/') + 1,
+      assets[0].uri.length
+    );
+    const extend = filename.split('.')[1];
 
     if (!canceled) {
-      setImage({ uri: assets[0].uri, name: assets[0].fileName, type: assets[0].type });
+      setImage({ uri: assets[0].uri, name: filename, type: 'image/' + extend });
     }
   };
 
   const onDrop = useCallback((acceptedFiles) => {
-    console.log('dpzone');
     const file = acceptedFiles[0];
     const fileUrl = URL.createObjectURL(file);
     setImage({ uri: fileUrl, file });
-    console.log(file);
   }, []);
 
   let dpZone = null;
@@ -129,11 +133,9 @@ const FeedScreen = (props) => {
       return;
     }
 
-    console.log(postText, image);
     const post = new FormData();
     post.append('text', postText);
     post.append('image', Platform.OS === 'web' ? image?.file : image);
-
     console.log(image);
 
     try {
@@ -180,7 +182,7 @@ const FeedScreen = (props) => {
       setPostText('');
       setImage(null);
     } catch (error) {
-      console.error(error);
+      console.log(error.name, error.code, error.config, error.request);
       toast.show({
         placement: 'bottom',
         render: () => {
@@ -786,7 +788,7 @@ const FeedScreen = (props) => {
                         bg="lightBlue.400"
                         size="md"
                         source={{
-                          uri: 'https://avatars.githubusercontent.com/u/63363561?v=4',
+                          uri: `http://192.168.1.106:3001/${item.user.picture}`,
                         }}>
                         {item.user.name.charAt(0)}
                       </Avatar>
