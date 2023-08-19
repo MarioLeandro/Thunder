@@ -1,6 +1,6 @@
-Instruções para Executar uma Aplicação Expo React Native
+# Instruções para Executar uma Aplicação Expo React Native
 
-Pré-requisitos
+## Pré-requisitos
 Antes de começar, certifique-se de ter as seguintes ferramentas instaladas em seu sistema:
 
 Node.js e npm: O Expo e o React Native são construídos sobre o Node.js. Você pode baixar e instalar o Node.js em nodejs.org.
@@ -10,7 +10,7 @@ npm install -g expo-cli
 
 Expo Go (opcional, mas recomendado): O Expo Go é um aplicativo que permite executar aplicativos Expo em um dispositivo físico para testar seu aplicativo em tempo real. Você pode baixá-lo na App Store (iOS) ou Google Play Store (Android).
 
-Passos para Executar a Aplicação
+## Passos para Executar a Aplicação
 Clone o Repositório ou Crie um Projeto: Comece criando um novo projeto Expo ou clonando um repositório existente.
 
 Navegue para o Diretório do Projeto: Use o terminal para navegar até o diretório raiz do projeto:
