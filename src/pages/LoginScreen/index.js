@@ -72,7 +72,7 @@ const LoginScreen = ({ navigation }) => {
 
             <VStack space={3} mt="5">
               <FormControl>
-                <FormControl.Label _text={{ color: 'coolGray.100' }}>Usuário</FormControl.Label>
+                <FormControl.Label _text={{ color: 'coolGray.100' }}>E-mail</FormControl.Label>
                 <Input
                   size={'lg'}
                   bgColor={'coolGray.100'}

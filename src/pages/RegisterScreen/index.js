@@ -11,14 +11,18 @@ import {
   Pressable,
   Text,
   VStack,
+  useToast,
 } from 'native-base';
 import React from 'react';
 import { Image, Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../../services/api';
+import CustomToast from '../../components/CustomToast';
 
 const RegisterScreen = ({ navigation }) => {
+  const toast = useToast();
+
   const { height, width } = useWindowDimensions();
   const [showPass, setShowPass] = React.useState(false);
   const [showCPass, setShowCPass] = React.useState('');
@@ -28,15 +32,58 @@ const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = React.useState('');
 
   async function handleSignUp() {
+    if (!name || !email || !password) {
+      return toast.show({
+        placement: 'bottom',
+        render: () => {
+          return (
+            <CustomToast
+              description={'Preencha todos os campos'}
+              title={'Erro'}
+              variant={'solid'}
+              duration={1000}
+              status={'error'}
+            />
+          );
+        },
+      });
+    }
     try {
       await api.post('/user/', {
         name,
         email,
         password,
       });
-      console.log('foi');
+      toast.show({
+        placement: 'bottom',
+        render: () => {
+          return (
+            <CustomToast
+              description={'Registrado com sucesso'}
+              title={'Erro'}
+              variant={'solid'}
+              duration={1000}
+              status={'success'}
+            />
+          );
+        },
+      });
       navigation.navigate('Login');
     } catch (error) {
+      toast.show({
+        placement: 'bottom',
+        render: () => {
+          return (
+            <CustomToast
+              description={'Preencha tudo corretamente'}
+              title={'Erro'}
+              variant={'solid'}
+              duration={1000}
+              status={'error'}
+            />
+          );
+        },
+      });
       console.log(error);
     }
   }

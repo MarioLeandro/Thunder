@@ -61,7 +61,6 @@ const TutorialWeb = (props) => {
         setIsLevelUpModalOpen(true);
       }
       setIsLevelIncreasing(false);
-      props.clear();
     }
   }
 
@@ -100,6 +99,7 @@ const TutorialWeb = (props) => {
       <LevelUpModal
         isLevelUpModalOpen={isLevelUpModalOpen}
         setIsLevelUpModalOpen={setIsLevelUpModalOpen}
+        clear={props.clear}
       />
     </View>
   ) : (
